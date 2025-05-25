@@ -118,7 +118,7 @@ export function PersonalDetailsForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     localStorage.setItem('personalDetails', JSON.stringify(formData));
-    navigate('/second-page');
+    navigate('/additional-details');
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -130,18 +130,18 @@ export function PersonalDetailsForm() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-white">
+    <div className="min-h-screen w-full bg-white dark:bg-gradient-to-br dark:from-black dark:via-gray-900 dark:to-gray-800 transition-colors duration-500">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center mb-8 pb-10">
-          <h1 className="text-2xl font-semibold text-gray-900">Welcome to Agada Tantra Parikshika</h1>
-          <p className="mt-1 text-sm text-gray-600">Please fill in your personal details</p>
+        <div className="text-center mb-8 py-10">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Welcome to Agada Tantra Parikshika</h1>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Please fill in your personal details</p>
         </div>
 
         <div className="max-w-3xl mx-auto">
           <form onSubmit={handleSubmit} className="space-y-8">
             {fields.map((field) => (
-              <div key={field.id} className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <label htmlFor={field.id} className="block text-sm font-medium text-gray-900 mb-2">
+              <div key={field.id} className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-800 transition-colors duration-500">
+                <label htmlFor={field.id} className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
                   {field.label}
                 </label>
 
@@ -201,7 +201,7 @@ export function PersonalDetailsForm() {
                 type="submit"
                 className="rounded-md bg-indigo-600 px-7 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
-                Submit
+                Next
               </button>
             </div>
           </form>

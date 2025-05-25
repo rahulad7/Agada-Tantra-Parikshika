@@ -1,23 +1,48 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { PersonalDetailsForm } from './components/PersonalDetails'
+import { AdditionalDetails } from './components/AdditionalDetails'
+import { MainTabs } from './components/MainTabs'
+import { FoodActivity } from './components/FoodActivity'
+import { ThemeProvider, useTheme } from './components/ThemeProvider'
+import { SunIcon, MoonIcon } from '@heroicons/react/24/solid'
 import './App.css'
 
-function SecondPage() {
+function ThemeToggleButton() {
+  const { theme, toggleTheme } = useTheme();
   return (
-    <div className="min-h-screen w-full bg-white flex items-center justify-center">
-      <h1 className="text-4xl font-bold text-gray-900">Second Page</h1>
-    </div>
+    <button
+      onClick={toggleTheme}
+      className="fixed top-4 right-4 z-50 bg-gray-200 dark:bg-gray-800 p-2 rounded-full shadow hover:bg-gray-300 dark:hover:bg-gray-700 transition"
+      aria-label="Toggle theme"
+    >
+      {theme === 'dark' ? (
+        <SunIcon className="h-6 w-6 text-yellow-400" />
+      ) : (
+        <MoonIcon className="h-6 w-6 text-gray-700" />
+      )}
+    </button>
+  );
+}
+
+function AppRoutes() {
+  return (
+    <Router>
+      <ThemeToggleButton />
+      <Routes>
+        <Route path="/" element={<PersonalDetailsForm />} />
+        <Route path="/additional-details" element={<AdditionalDetails />} />
+        <Route path="/main-tabs" element={<MainTabs />} />
+        <Route path="/food-activity" element={<FoodActivity />} />
+      </Routes>
+    </Router>
   );
 }
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<PersonalDetailsForm />} />
-        <Route path="/second-page" element={<SecondPage />} />
-      </Routes>
-    </Router>
+    <ThemeProvider>
+      <AppRoutes />
+    </ThemeProvider>
   );
 }
 
