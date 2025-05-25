@@ -1,9 +1,24 @@
-function App() {
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { PersonalDetailsForm } from './components/PersonalDetails'
+import './App.css'
+
+function SecondPage() {
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <h1 className="text-4xl font-bold justify-center text-blue-700 ">Welcome to Agada Tantra Parikshika</h1>
+    <div className="min-h-screen w-full bg-white flex items-center justify-center">
+      <h1 className="text-4xl font-bold text-gray-900">Second Page</h1>
     </div>
   );
 }
 
-export default App;
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<PersonalDetailsForm />} />
+        <Route path="/second-page" element={<SecondPage />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App
