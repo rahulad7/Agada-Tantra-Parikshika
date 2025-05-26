@@ -6,6 +6,7 @@ import { FoodActivity } from './components/FoodActivity'
 import { ThemeProvider, useTheme } from './components/ThemeProvider'
 import { SunIcon, MoonIcon } from '@heroicons/react/24/solid'
 import { DamashaBite } from './components/DamashaBite'
+import { ExtrnalAgents } from './components/ExtrnalAgents'
 import './App.css'
 
 function ThemeToggleButton() {
@@ -35,6 +36,7 @@ function AppRoutes() {
         <Route path="/main-tabs" element={<MainTabs />} />
         <Route path="/food-activity" element={<FoodActivity />} />
         <Route path="/damsha-bite" element={<DamashaBite />} />
+        <Route path="/external-agents" element={<ExtrnalAgents />} />
       </Routes>
     </Router>
   );

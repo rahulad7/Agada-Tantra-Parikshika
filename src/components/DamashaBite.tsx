@@ -98,12 +98,79 @@ const organismOptions: OrganismOption[] = [
   ] },
 ];
 
+// SARPA subtype symptoms mapping
+const sarpaSubtypeSymptoms: Record<string, string[]> = {
+  'A. DARVIKARA SARPA': [
+    '1. Twak krushna - blackish skin',
+    '2. Nayana krushna - blackish eyes',
+    '3. Nakha krushna - blackish nails',
+    '4. Dasana krushna - blackish teeth',
+    '5. Vadana krushna - blackish face',
+    '6. Mutra krushna - blackish urine',
+    '7. Purisha krushna - blackish feces',
+    '8. Damsha krushna - blackish bite site',
+    '9. Rukshata - Dryness',
+    '10. Shira gaurava - Heaviness of head',
+    '11. Sandhi vedana - Pain in joints',
+    '12. Kati daurbalya - Weakness of lowback',
+    '13. Prustha daurbalya - Weakness of back',
+    '14. Griva daurbalya - Weakness of neck',
+    '15. Jrumbha - Yawning',
+    '16. Vepathu - Shivering / tremors',
+    '17. Swara avasada - Sunken voice',
+    '18. Ghurghuraka - Making ghhurghur sound',
+    '19. Jadata - Inactiveness',
+    '20. Shuska udgara - Dry eructations',
+    '21. Kasa - Cough',
+    '22. Swasa - Difficult breathing',
+    '23. Hikka - Hiccup',
+    '24. Vayu urdhvagamana - Upward movement of vayu',
+    '25. Shula - Colicky pain in the abdomen',
+    '26. Udvestana - Convulsive movements of body',
+    '27. Trushna - Thirst',
+    '28. Lala srava - Salivation',
+    '29. Phenagamana - Frothy vomiting',
+    '30. Sroto avarodha - Blocking of srotas',
+    '31. Vata vedana - Pain of vata origin',
+  ],
+  'B. MANDALI SARPA': [
+    '1. Tvagadinam pitatvam - yellowish discoloration of skin etc.',
+    '2. Sheeta abhilasha - Desire for cold',
+    '3. Paridhupanam - Fumigating sensation',
+    '4. Daha - Burning sensation',
+    '5. Trushna - Thirst',
+    '6. Mada - Insanity',
+    '7. Murccha - Syncope',
+    '8. Jwara - Fever',
+    '9. Urdhvam sonita gamana - Bleeding from upper orifices of body',
+    '10. Adhah sonita gamana - Bleeding from lower orifices of body',
+    '11. Mamsavasatana - Decaying of mamsa',
+    '12. Svayathu - Swelling',
+    '13. Dmsha kotha - Necrosis at bite site',
+    '14. Pita rupa darsana - Yellowish appearance',
+    '15. Ashu kopa - Quick anger',
+    '16. Pitta vedana - Pain of pitta type',
+    '17. Osha - Burning sensation with sweating and restlessness',
+    '18. Chosha - Sucking type of pain',
+  ],
+  'C. RAJIMANTHA': [
+    '1. Tvagadinam suklatvam - whitish discoloration of skin etc.',
+    '2. Sheeta jwara - Fever with chills',
+    '3. Roma harsha - Horripilation',
+    '4. Gatra stambha - Stiffness of body parts',
+    '5. Adamsashophah - Swelling at bite site',
+    '6. Sandrakapha praseka - thick salivation',
+    '7. Chardiabhiksnam - Constant vomiting',
+  ],
+};
+
 export function DamashaBite() {
   const [selectedOrganism, setSelectedOrganism] = useState('');
   const [selectedSarpa, setSelectedSarpa] = useState('');
   const [timeOfBite, setTimeOfBite] = useState('');
   const [siteOfBite, setSiteOfBite] = useState('');
   const [modalOption, setModalOption] = useState<OrganismOption | null>(null);
+  const [sarpaModal, setSarpaModal] = useState<string | null>(null);
 
   const handleOptionClick = (opt: OrganismOption) => {
     setSelectedOrganism(opt.key);
@@ -149,7 +216,10 @@ export function DamashaBite() {
                             name="sarpaType"
                             value={sub}
                             checked={selectedSarpa === sub}
-                            onChange={() => setSelectedSarpa(sub)}
+                            onChange={() => {
+                              setSelectedSarpa(sub);
+                              if (sarpaSubtypeSymptoms[sub]) setSarpaModal(sub);
+                            }}
                             className="accent-indigo-600 h-4 w-4"
                           />
                           <span className="text-gray-800 dark:text-gray-200">{sub}</span>
@@ -208,6 +278,28 @@ export function DamashaBite() {
                 >
                   {sub}
                 </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal for SARPA subtype symptoms */}
+      {sarpaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-md w-full p-6 relative animate-fadeIn">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white text-2xl font-bold"
+              onClick={() => setSarpaModal(null)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <h3 className="text-lg font-semibold text-indigo-700 dark:text-indigo-300 mb-4 text-center">{sarpaModal} Symptoms</h3>
+            <div className="space-y-3 max-h-72 overflow-y-auto pr-2">
+              {sarpaSubtypeSymptoms[sarpaModal]?.map((symptom) => (
+                <div key={symptom} className="px-4 py-2 rounded-lg bg-indigo-50 dark:bg-gray-800 text-gray-900 dark:text-gray-200 border border-gray-200 dark:border-gray-700">
+                  {symptom}
+                </div>
               ))}
             </div>
           </div>

@@ -130,82 +130,77 @@ export function PersonalDetailsForm() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-white dark:bg-gradient-to-br dark:from-black dark:via-gray-900 dark:to-gray-800 transition-colors duration-500">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center mb-8 py-10">
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Welcome to Agada Tantra Parikshika</h1>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">Please fill in your personal details</p>
+    <div className="min-h-screen w-full bg-gradient-to-br from-blue-200 via-indigo-100 to-emerald-100 dark:from-black dark:via-gray-900 dark:to-gray-800 flex items-center justify-center transition-colors duration-500 px-2 py-8 sm:py-16">
+      <div className="w-full max-w-2xl p-4 sm:p-12 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-indigo-200 dark:border-gray-800 transition-colors duration-500">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-indigo-700 dark:text-indigo-300 mb-2">Welcome to Agada Tantra Parikshika</h1>
+          <p className="mt-1 text-base text-gray-600 dark:text-gray-300">Please fill in your personal details</p>
         </div>
-
-        <div className="max-w-3xl mx-auto">
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {fields.map((field) => (
-              <div key={field.id} className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-800 transition-colors duration-500">
-                <label htmlFor={field.id} className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
-                  {field.label}
-                </label>
-
-                {field.type === 'select' ? (
-                  <div className="relative">
-                    <select
-                      id={field.id}
-                      name={field.id}
-                      value={formData[field.id as keyof PersonalDetails]}
-                      onChange={handleChange}
-                      required={field.required}
-                      className="block w-full rounded-md bg-white py-1.5 pl-3 pr-8 text-gray-900 border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm"
-                    >
-                      <option value="">Select {field.label}</option>
-                      {field.options?.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDownIcon className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  </div>
-                ) : field.type === 'textarea' ? (
-                  <div>
-                    <textarea
-                      id={field.id}
-                      name={field.id}
-                      value={formData[field.id as keyof PersonalDetails]}
-                      onChange={handleChange}
-                      required={field.required}
-                      maxLength={field.maxLength}
-                      rows={field.id === 'mainComplaints' ? 6 : 3}
-                      className="block w-full rounded-md bg-white px-3 py-1.5 text-gray-900 border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm"
-                    />
-                    {field.id === 'mainComplaints' && (
-                      <p className="mt-2 text-sm text-gray-500">
-                        {formData.mainComplaints.length}/1000 characters
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <input
-                    type={field.type}
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {fields.map((field) => (
+            <div key={field.id} className="relative bg-white/70 dark:bg-gray-800/70 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-500">
+              <label htmlFor={field.id} className="block text-base font-medium text-gray-900 dark:text-gray-200 mb-2">
+                {field.label}
+              </label>
+              {field.type === 'select' ? (
+                <div className="relative">
+                  <select
                     id={field.id}
                     name={field.id}
                     value={formData[field.id as keyof PersonalDetails]}
                     onChange={handleChange}
                     required={field.required}
-                    className="block w-full rounded-md bg-white px-3 py-1.5 text-gray-900 border border-gray-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+                    className="block w-full rounded-lg bg-white dark:bg-gray-900 py-2 pl-3 pr-10 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600 sm:text-base transition-all"
+                  >
+                    <option value="">Select {field.label}</option>
+                    {field.options?.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDownIcon className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                </div>
+              ) : field.type === 'textarea' ? (
+                <div>
+                  <textarea
+                    id={field.id}
+                    name={field.id}
+                    value={formData[field.id as keyof PersonalDetails]}
+                    onChange={handleChange}
+                    required={field.required}
+                    maxLength={field.maxLength}
+                    rows={field.id === 'mainComplaints' ? 6 : 3}
+                    className="block w-full rounded-lg bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600 sm:text-base transition-all"
                   />
-                )}
-              </div>
-            ))}
-
-            <div className="flex justify-center">
-              <button
-                type="submit"
-                className="rounded-md bg-indigo-600 px-7 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Next
-              </button>
+                  {field.id === 'mainComplaints' && (
+                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                      {formData.mainComplaints.length}/1000 characters
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <input
+                  type={field.type}
+                  id={field.id}
+                  name={field.id}
+                  value={formData[field.id as keyof PersonalDetails]}
+                  onChange={handleChange}
+                  required={field.required}
+                  className="block w-full rounded-lg bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600 sm:text-base transition-all"
+                />
+              )}
             </div>
-          </form>
-        </div>
+          ))}
+          <div className="flex justify-center">
+            <button
+              type="submit"
+              className="rounded-lg bg-gradient-to-r from-indigo-500 to-emerald-500 px-10 py-3 text-base font-semibold text-white shadow-lg hover:from-indigo-600 hover:to-emerald-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all"
+            >
+              Next
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
