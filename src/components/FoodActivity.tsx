@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const garaQuestions = [
   { key: '1', text: 'Have you consumed suspicious or unknown food, medicine, or herbal mixture recently?' },
@@ -31,6 +32,7 @@ export function FoodActivity() {
   const [ratings, setRatings] = useState<{ [key: string]: boolean[] }>({});
   const [dushiAnswers, setDushiAnswers] = useState<{ [key: string]: 'yes' | 'no' | '' }>({});
   const [dushiRatings, setDushiRatings] = useState<{ [key: string]: boolean[] }>({});
+  const navigate = useNavigate();
 
   const handleChange = (key: string, value: 'yes' | 'no') => {
     setAnswers((prev) => ({ ...prev, [key]: value }));
@@ -79,6 +81,13 @@ export function FoodActivity() {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800 flex items-center justify-center transition-colors duration-500 px-2 py-8 sm:py-16">
       <div className="w-full max-w-3xl space-y-12">
+        <button
+          type="button"
+          onClick={() => navigate('/main-tabs')}
+          className="flex items-center gap-2 mb-6 px-4 py-2 bg-white/80 dark:bg-gray-800/80 text-indigo-700 dark:text-indigo-300 rounded-lg shadow border border-indigo-200 dark:border-gray-700 hover:bg-indigo-100 dark:hover:bg-gray-700 transition font-semibold text-base"
+        >
+          <span className="text-xl">←</span> Back
+        </button>
         {/* Gara Visha Section */}
         <section className="p-6 sm:p-10 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border-2 border-indigo-200 dark:border-indigo-700 transition-colors duration-500">
           <h1 className="text-2xl sm:text-3xl font-bold text-indigo-700 dark:text-indigo-300 mb-2 text-center">Gara Visha Questionnaire</h1>

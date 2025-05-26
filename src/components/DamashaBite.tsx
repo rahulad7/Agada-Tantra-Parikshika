@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 type OrganismOption = {
   key: string;
@@ -171,6 +172,7 @@ export function DamashaBite() {
   const [siteOfBite, setSiteOfBite] = useState('');
   const [modalOption, setModalOption] = useState<OrganismOption | null>(null);
   const [sarpaModal, setSarpaModal] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleOptionClick = (opt: OrganismOption) => {
     setSelectedOrganism(opt.key);
@@ -192,6 +194,13 @@ export function DamashaBite() {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-indigo-50 to-white dark:from-black dark:via-gray-900 dark:to-gray-800 flex items-center justify-center px-2 py-8 sm:py-16 transition-colors duration-500">
       <div className="w-full max-w-2xl p-8 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-indigo-200 dark:border-indigo-700 transition-colors duration-500">
+        <button
+          type="button"
+          onClick={() => navigate('/main-tabs')}
+          className="flex items-center gap-2 mb-6 px-4 py-2 bg-white/80 dark:bg-gray-800/80 text-indigo-700 dark:text-indigo-300 rounded-lg shadow border border-indigo-200 dark:border-gray-700 hover:bg-indigo-100 dark:hover:bg-gray-700 transition font-semibold text-base"
+        >
+          <span className="text-xl">←</span> Back
+        </button>
         <h1 className="text-2xl sm:text-3xl font-bold text-indigo-700 dark:text-indigo-300 mb-8 text-center">DAMSHA / BITE</h1>
         <div className="space-y-8">
           <div className="bg-indigo-50 dark:bg-gray-800 rounded-lg p-6 border border-indigo-100 dark:border-gray-700 transition-colors duration-500">

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const agentOptions = [
   {
@@ -203,6 +204,7 @@ type SymptomAnswers = {
 };
 
 export function ExtrnalAgents() {
+  const navigate = useNavigate();
   const [modalOption, setModalOption] = useState<typeof agentOptions[0] | null>(null);
   const [symptomAnswers, setSymptomAnswers] = useState<SymptomAnswers>({});
 
@@ -241,6 +243,13 @@ export function ExtrnalAgents() {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-indigo-50 to-white dark:from-black dark:via-gray-900 dark:to-gray-800 flex items-center justify-center px-2 py-8 sm:py-16 transition-colors duration-500">
       <div className="w-full max-w-2xl p-8 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-indigo-200 dark:border-indigo-700 transition-colors duration-500">
+        <button
+          type="button"
+          onClick={() => navigate('/main-tabs')}
+          className="flex items-center gap-2 mb-6 px-4 py-2 bg-white/80 dark:bg-gray-800/80 text-indigo-700 dark:text-indigo-300 rounded-lg shadow border border-indigo-200 dark:border-gray-700 hover:bg-indigo-100 dark:hover:bg-gray-700 transition font-semibold text-base"
+        >
+          <span className="text-xl">←</span> Back
+        </button>
         <h1 className="text-2xl sm:text-3xl font-bold text-indigo-700 dark:text-indigo-300 mb-8 text-center">CONTACTS WITH SOME EXTERNAL AGENTS</h1>
         <div className="space-y-4">
           {agentOptions.map((opt) => (
