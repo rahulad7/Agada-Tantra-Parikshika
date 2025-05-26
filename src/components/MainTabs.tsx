@@ -17,6 +17,10 @@ export function MainTabs() {
       navigate('/food-activity');
       return;
     }
+    if (idx === 1) {
+      navigate('/damsha-bite');
+      return;
+    }
     if (idx !== activeTab) {
       setTabAnim('opacity-0 translate-y-4');
       setTimeout(() => {
