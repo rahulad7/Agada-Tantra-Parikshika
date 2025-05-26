@@ -27,7 +27,7 @@ export function AdditionalDetails() {
           onClick={() => navigate('/')}
           className="flex mb-6 px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-700 transition"
         >
-          ← Back
+          ← Back 
         </button>
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-8 text-center transition-colors duration-500">Additional Details</h1>
         <form className="space-y-8" onSubmit={e => { e.preventDefault(); navigate('/main-tabs'); }}>
