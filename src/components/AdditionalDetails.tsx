@@ -13,10 +13,53 @@ export function AdditionalDetails() {
     ipd: '',
     ipdNumber: '',
   });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error for this field when user changes it
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+    if (!formData.associatedComplaints.trim()) {
+      newErrors.associatedComplaints = 'Associated Complaints is required';
+    }
+    if (!formData.allergiesAssociated.trim()) {
+      newErrors.allergiesAssociated = 'Allergies Associated is required';
+    }
+    if (!formData.anyBitePreviously.trim()) {
+      newErrors.anyBitePreviously = 'Any Bite Previously is required';
+    }
+    if (!formData.opd) {
+      newErrors.opd = 'OPD selection is required';
+    } else if (formData.opd === 'yes' && !formData.opdNumber.trim()) {
+      newErrors.opdNumber = 'OPD Number is required';
+    }
+    if (!formData.ipd) {
+      newErrors.ipd = 'IPD selection is required';
+    } else if (formData.ipd === 'yes' && !formData.ipdNumber.trim()) {
+      newErrors.ipdNumber = 'IPD Number is required';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateForm()) {
+      // Save form data to localStorage
+      localStorage.setItem('additionalDetails', JSON.stringify(formData));
+      navigate('/main-tabs');
+    }
   };
 
   return (
@@ -30,7 +73,7 @@ export function AdditionalDetails() {
           ← Back
         </button>
         <h1 className="text-3xl sm:text-4xl font-bold text-indigo-700 dark:text-indigo-300 mb-8 text-center">Additional Details</h1>
-        <form className="space-y-8" onSubmit={e => { e.preventDefault(); navigate('/main-tabs'); }}>
+        <form className="space-y-8" onSubmit={handleSubmit}>
           <div className="relative bg-white/70 dark:bg-gray-800/70 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-500">
             <label className="block text-base font-medium text-gray-900 dark:text-gray-200 mb-2">ASSOCIATED COMPLAINTS</label>
             <textarea
@@ -43,6 +86,7 @@ export function AdditionalDetails() {
               className="block w-full rounded-lg bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600 sm:text-base transition-all"
             />
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{formData.associatedComplaints.length}/600 characters</p>
+            {errors.associatedComplaints && <p className="mt-1 text-xs text-red-500">{errors.associatedComplaints}</p>}
           </div>
           <div className="relative bg-white/70 dark:bg-gray-800/70 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-500">
             <label className="block text-base font-medium text-gray-900 dark:text-gray-200 mb-2">ALLERGIES ASSOCIATED</label>
@@ -56,6 +100,7 @@ export function AdditionalDetails() {
               className="block w-full rounded-lg bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600 sm:text-base transition-all"
             />
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{formData.allergiesAssociated.length}/600 characters</p>
+            {errors.allergiesAssociated && <p className="mt-1 text-xs text-red-500">{errors.allergiesAssociated}</p>}
           </div>
           <div className="relative bg-white/70 dark:bg-gray-800/70 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-500">
             <label className="block text-base font-medium text-gray-900 dark:text-gray-200 mb-2">ANY BITE PREVIOUSLY (last 10 yrs)</label>
@@ -69,6 +114,7 @@ export function AdditionalDetails() {
               className="block w-full rounded-lg bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600 sm:text-base transition-all"
             />
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{formData.anyBitePreviously.length}/600 characters</p>
+            {errors.anyBitePreviously && <p className="mt-1 text-xs text-red-500">{errors.anyBitePreviously}</p>}
           </div>
           <div className="relative bg-white/70 dark:bg-gray-800/70 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-500">
             <label className="block text-base font-medium text-gray-900 dark:text-gray-200 mb-2">NIDANA <span className="text-gray-400">(optional)</span></label>
@@ -109,6 +155,8 @@ export function AdditionalDetails() {
                 NO
               </label>
             </div>
+            {!formData.opd && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Please select an item in the list</p>}
+            {errors.opd && <p className="mt-1 text-xs text-red-500">{errors.opd}</p>}
             {formData.opd === 'yes' && (
               <input
                 type="text"
@@ -119,6 +167,7 @@ export function AdditionalDetails() {
                 className="block w-full rounded-lg bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600 sm:text-base transition-all"
               />
             )}
+            {errors.opdNumber && <p className="mt-1 text-xs text-red-500">{errors.opdNumber}</p>}
           </div>
           <div className="relative bg-white/70 dark:bg-gray-800/70 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-500">
             <label className="block text-base font-medium text-gray-900 dark:text-gray-200 mb-2">IPD NO:</label>
@@ -146,6 +195,8 @@ export function AdditionalDetails() {
                 NO
               </label>
             </div>
+            {!formData.ipd && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Please select an item in the list</p>}
+            {errors.ipd && <p className="mt-1 text-xs text-red-500">{errors.ipd}</p>}
             {formData.ipd === 'yes' && (
               <input
                 type="text"
@@ -156,6 +207,7 @@ export function AdditionalDetails() {
                 className="block w-full rounded-lg bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600 sm:text-base transition-all"
               />
             )}
+            {errors.ipdNumber && <p className="mt-1 text-xs text-red-500">{errors.ipdNumber}</p>}
           </div>
           <div className="flex justify-center">
             <button

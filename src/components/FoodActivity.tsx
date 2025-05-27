@@ -29,15 +29,16 @@ const dushiQuestions = [
 
 export function FoodActivity() {
   const [answers, setAnswers] = useState<{ [key: string]: 'yes' | 'no' | '' }>({});
-  const [ratings, setRatings] = useState<{ [key: string]: boolean[] }>({});
+  const [ratings, setRatings] = useState<{ [key: string]: number }>({});
   const [dushiAnswers, setDushiAnswers] = useState<{ [key: string]: 'yes' | 'no' | '' }>({});
-  const [dushiRatings, setDushiRatings] = useState<{ [key: string]: boolean[] }>({});
+  const [dushiRatings, setDushiRatings] = useState<{ [key: string]: number }>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const navigate = useNavigate();
 
   const handleChange = (key: string, value: 'yes' | 'no') => {
     setAnswers((prev) => ({ ...prev, [key]: value }));
     if (value === 'yes' && !ratings[key]) {
-      setRatings((prev) => ({ ...prev, [key]: [false, false, false] }));
+      setRatings((prev) => ({ ...prev, [key]: 1 }));
     }
     if (value === 'no') {
       setRatings((prev) => {
@@ -46,20 +47,22 @@ export function FoodActivity() {
         return newRatings;
       });
     }
+    // Clear error when question is answered
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[key];
+      return newErrors;
+    });
   };
 
-  const handleRating = (qKey: string, idx: number) => {
-    setRatings((prev) => {
-      const arr = prev[qKey] ? [...prev[qKey]] : [false, false, false];
-      arr[idx] = !arr[idx];
-      return { ...prev, [qKey]: arr };
-    });
+  const handleRating = (qKey: string, value: number) => {
+    setRatings((prev) => ({ ...prev, [qKey]: value }));
   };
 
   const handleDushiChange = (key: string, value: 'yes' | 'no') => {
     setDushiAnswers((prev) => ({ ...prev, [key]: value }));
     if (value === 'yes' && !dushiRatings[key]) {
-      setDushiRatings((prev) => ({ ...prev, [key]: [false, false, false] }));
+      setDushiRatings((prev) => ({ ...prev, [key]: 1 }));
     }
     if (value === 'no') {
       setDushiRatings((prev) => {
@@ -68,14 +71,56 @@ export function FoodActivity() {
         return newRatings;
       });
     }
+    // Clear error when question is answered
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[key];
+      return newErrors;
+    });
   };
 
-  const handleDushiRating = (qKey: string, idx: number) => {
-    setDushiRatings((prev) => {
-      const arr = prev[qKey] ? [...prev[qKey]] : [false, false, false];
-      arr[idx] = !arr[idx];
-      return { ...prev, [qKey]: arr };
+  const handleDushiRating = (qKey: string, value: number) => {
+    setDushiRatings((prev) => ({ ...prev, [qKey]: value }));
+  };
+
+  const handleSubmit = () => {
+    const newErrors: { [key: string]: string } = {};
+    let hasErrors = false;
+
+    // Check Gara questions
+    garaQuestions.forEach(q => {
+      if (!answers[q.key]) {
+        newErrors[q.key] = 'Please answer this question';
+        hasErrors = true;
+      } else if (answers[q.key] === 'yes' && !ratings[q.key]) {
+        newErrors[q.key] = 'Please set a grade level';
+        hasErrors = true;
+      }
     });
+
+    // Check Dushi questions
+    dushiQuestions.forEach(q => {
+      if (!dushiAnswers[q.key]) {
+        newErrors[q.key] = 'Please answer this question';
+        hasErrors = true;
+      } else if (dushiAnswers[q.key] === 'yes' && !dushiRatings[q.key]) {
+        newErrors[q.key] = 'Please set a grade level';
+        hasErrors = true;
+      }
+    });
+
+    setErrors(newErrors);
+
+    if (!hasErrors) {
+      navigate('/conclusion', { 
+        state: { 
+          answers, 
+          ratings, 
+          dushiAnswers, 
+          dushiRatings 
+        } 
+      });
+    }
   };
 
   return (
@@ -120,19 +165,21 @@ export function FoodActivity() {
                     </label>
                   </div>
                 </div>
+                {errors[q.key] && (
+                  <p className="text-red-500 dark:text-red-400 text-sm mt-2">{errors[q.key]}</p>
+                )}
                 {answers[q.key] === 'yes' && (
-                  <div className="flex gap-4 mt-4 ml-2">
-                    {[0, 1, 2].map((idx) => (
-                      <label key={idx} className="flex flex-col items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={!!ratings[q.key]?.[idx]}
-                          onChange={() => handleRating(q.key, idx)}
-                          className="accent-yellow-400 h-6 w-6"
-                        />
-                        <span className="text-xs text-gray-700 dark:text-gray-200 mt-1">{idx + 1}</span>
-                      </label>
-                    ))}
+                  <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 ml-2">
+                    <input
+                      type="range"
+                      min={1}
+                      max={3}
+                      step={1}
+                      value={ratings[q.key] || 1}
+                      onChange={e => handleRating(q.key, Number(e.target.value))}
+                      className="w-40 accent-yellow-400"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-200 font-semibold">Grade: {ratings[q.key] || 1}</span>
                   </div>
                 )}
               </div>
@@ -175,25 +222,34 @@ export function FoodActivity() {
                     </label>
                   </div>
                 </div>
+                {errors[q.key] && (
+                  <p className="text-red-500 dark:text-red-400 text-sm mt-2">{errors[q.key]}</p>
+                )}
                 {dushiAnswers[q.key] === 'yes' && (
-                  <div className="flex gap-4 mt-4 ml-2">
-                    {[0, 1, 2].map((idx) => (
-                      <label key={idx} className="flex flex-col items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={!!dushiRatings[q.key]?.[idx]}
-                          onChange={() => handleDushiRating(q.key, idx)}
-                          className="accent-yellow-400 h-6 w-6"
-                        />
-                        <span className="text-xs text-gray-700 dark:text-gray-200 mt-1">{idx + 1}</span>
-                      </label>
-                    ))}
+                  <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 ml-2">
+                    <input
+                      type="range"
+                      min={1}
+                      max={3}
+                      step={1}
+                      value={dushiRatings[q.key] || 1}
+                      onChange={e => handleDushiRating(q.key, Number(e.target.value))}
+                      className="w-40 accent-yellow-400"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-200 font-semibold">Grade: {dushiRatings[q.key] || 1}</span>
                   </div>
                 )}
               </div>
             ))}
           </form>
         </section>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          className="w-full py-3 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition font-semibold text-lg"
+        >
+          Submit and Continue
+        </button>
       </div>
     </div>
   );
