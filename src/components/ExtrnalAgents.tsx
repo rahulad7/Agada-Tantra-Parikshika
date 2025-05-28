@@ -115,8 +115,7 @@ const agentOptions = [
   },
   {
     key: "savisha-dantanakha",
-    label:
-      "SAVISHA DANTANAKHAKASTHA [nail and teeth applicants causing toxic effect]",
+    label: "SAVISHA DANTANAKHAKASTHA [nail and teeth applicants causing toxic effect]",
     symptoms: [
       "Kurcahkuchaka visiryate - Teeth brush gets destructed",
       "Dantamamsashophah / dantamamsasvayathu - Swelling of gums",
@@ -132,8 +131,7 @@ const agentOptions = [
   },
   {
     key: "savisha-abhyanga",
-    label:
-      "SAVISHA ABHYANGA [any oil application on body causing harmful effect]",
+    label: "SAVISHA ABHYANGA [any oil application on body causing harmful effect]",
     symptoms: [
       "Kandu - Itching",
       "Ruja - Pain",
@@ -175,8 +173,7 @@ const agentOptions = [
   },
   {
     key: "savisha-shiroabhyanga",
-    label:
-      "SAVISHA SHIROABHYANGA [hair oil application recently causing toxic effect]",
+    label: "SAVISHA SHIROABHYANGA [hair oil application recently causing toxic effect]",
     symptoms: [
       "Kesacyutih / kesasatah / kesacyavanam - Falling of hairs",
       "Shira ruja - Headache",
@@ -212,11 +209,12 @@ type AgentAnswers = {
 
 export function ExtrnalAgents() {
   const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
-  const [selectedAgent, setSelectedAgent] = useState<typeof agentOptions[0] | null>(null);
-  const [selectedSymptom, setSelectedSymptom] = useState<string | null>(null);
   const [answers, setAnswers] = useState<AgentAnswers>({});
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const navigate = useNavigate();
+
+  const [durationOfContact, setDurationOfContact] = useState('');
+  const [siteOfContact, setSiteOfContact] = useState('');
 
   const handleAgentCheckbox = (agentKey: string) => {
     setSelectedAgents((prev) =>
@@ -226,26 +224,13 @@ export function ExtrnalAgents() {
         ? [...prev, agentKey]
         : prev
     );
-    setSelectedAgent(null);
-    setSelectedSymptom(null);
   };
 
-  // const handleAgentSelect = (agent: typeof agentOptions[0]) => {
-  //   setSelectedAgent(agent);
-  //   setSelectedSymptom(null);
-  // };
-
-  const handleSymptomSelect = (symptom: string) => {
-    setSelectedSymptom(symptom);
-  };
-
-  const handleAnswer = (symptom: string, value: 'yes' | 'no') => {
-    if (!selectedAgent) return;
-
+  const handleAnswer = (agentKey: string, symptom: string, value: 'yes' | 'no') => {
     setAnswers((prev) => ({
       ...prev,
-      [selectedAgent.key]: {
-        ...prev[selectedAgent.key],
+      [agentKey]: {
+        ...prev[agentKey],
         [symptom]: {
           answer: value,
           ratings: value === 'yes' ? [false, false, false] : [],
@@ -256,22 +241,20 @@ export function ExtrnalAgents() {
     // Clear error when user makes a selection
     setErrors((prev) => {
       const newErrors = { ...prev };
-      delete newErrors[`${selectedAgent.key}-${symptom}`];
+      delete newErrors[`${agentKey}-${symptom}`];
       return newErrors;
     });
   };
 
-  const handleRating = (symptom: string, idx: number) => {
-    if (!selectedAgent) return;
-
+  const handleRating = (agentKey: string, symptom: string, idx: number) => {
     setAnswers((prev) => {
-      const currentRatings = prev[selectedAgent.key]?.[symptom]?.ratings || [false, false, false];
+      const currentRatings = prev[agentKey]?.[symptom]?.ratings || [false, false, false];
       const newRatings = [...currentRatings];
       newRatings[idx] = !newRatings[idx];
       return {
         ...prev,
-        [selectedAgent.key]: {
-          ...prev[selectedAgent.key],
+        [agentKey]: {
+          ...prev[agentKey],
           [symptom]: {
             answer: 'yes',
             ratings: newRatings,
@@ -281,35 +264,57 @@ export function ExtrnalAgents() {
     });
   };
 
+  // Validation function
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    let isValid = true;
 
-    Object.entries(answers).forEach(([agentKey, agentAnswers]) => {
-      Object.entries(agentAnswers).forEach(([symptom, answer]) => {
-        if (!answer.answer) {
-          newErrors[`${agentKey}-${symptom}`] = 'Please answer Yes or No';
-          isValid = false;
-        } else if (answer.answer === 'yes' && !answer.ratings.some(r => r)) {
-          newErrors[`${agentKey}-${symptom}`] = 'Please select at least one severity level';
-          isValid = false;
-        }
-      });
-    });
+    if (selectedAgents.length === 0) {
+      newErrors.selectedAgents = 'Please select at least one agent.';
+    }
+    if (!durationOfContact.trim()) {
+      newErrors.durationOfContact = 'Duration of Contact is required.';
+    }
+    if (!siteOfContact.trim()) {
+      newErrors.siteOfContact = 'Site of Contact is required.';
+    }
 
     setErrors(newErrors);
-    return isValid;
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = () => {
     if (validateForm()) {
-      localStorage.setItem('externalAgents', JSON.stringify(answers));
-      navigate('/conclusion');
+      // Gather external agents data
+      const externalAgentsData = {
+        selectedAgents,
+        answers,
+        durationOfContact,
+        siteOfContact,
+      };
+
+      // Retrieve data from previous pages from localStorage
+      const personalData = JSON.parse(localStorage.getItem('personalDetails') || '{}');
+      const additionalData = JSON.parse(localStorage.getItem('additionalDetails') || '{}');
+      const damashaData = JSON.parse(localStorage.getItem('damashaDetails') || '{}');
+
+      // Combine all data into allFormData
+      const allFormData = {
+        personal: personalData,
+        additional: additionalData,
+        damasha: Object.keys(damashaData).length > 0 ? damashaData : {},
+        externalAgents: externalAgentsData,
+      };
+
+      // Save combined data to localStorage
+      localStorage.setItem('allFormData', JSON.stringify(allFormData));
+
+      // Navigate to External Agent Conclusion page
+      navigate('/external-agent-conclusion');
     }
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-white via-gray-100 to-gray-200 dark:from-black dark:via-gray-900 dark:to-gray-800 flex items-center justify-center transition-colors duration-500 px-2 py-8 sm:py-16">
+    <div className="min-h-screen w-full bg-gradient-to-br from-blue-200 via-indigo-100 to-emerald-100 dark:from-black dark:via-gray-900 dark:to-gray-800 flex items-center justify-center transition-colors duration-500 px-2 py-8 sm:py-16">
       <div className="w-full max-w-3xl space-y-12">
         <button
           type="button"
@@ -323,120 +328,118 @@ export function ExtrnalAgents() {
           <h1 className="text-2xl sm:text-3xl font-bold text-indigo-700 dark:text-indigo-300 mb-2 text-center">External Agents Assessment</h1>
           <p className="text-center text-gray-600 dark:text-gray-300 mb-8 text-sm sm:text-base">Select an agent and its associated symptoms</p>
 
-          <div className="mb-6">
-            <span className="block text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">DUE TO CONTACT WITH</span>
-            <div className="space-y-2">
+          {/* I. DUE TO CONTACT WITH section */}
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">I. DUE TO CONTACT WITH</h2>
+            <div className="space-y-6">
               {agentOptions.map((agent) => (
-                <label key={agent.key} className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedAgents.includes(agent.key)}
-                    onChange={() => handleAgentCheckbox(agent.key)}
-                    disabled={
-                      !selectedAgents.includes(agent.key) && selectedAgents.length >= 2
-                    }
-                    className="accent-indigo-600 h-5 w-5"
-                  />
-                  <span className="font-medium text-base text-gray-900 dark:text-gray-100">{agent.label}</span>
-                  <button
-                    type="button"
-                    className="ml-2 px-2 py-1 text-xs rounded bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-200 hover:bg-indigo-200 dark:hover:bg-indigo-700 transition"
-                    onClick={() => setSelectedAgent(agent)}
-                  >
-                    Choose Symptoms
-                  </button>
-                </label>
-              ))}
-            </div>
-          </div>
+                <div key={agent.key} className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                  <label className="flex items-center gap-3 cursor-pointer mb-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedAgents.includes(agent.key)}
+                      onChange={() => handleAgentCheckbox(agent.key)}
+                      disabled={!selectedAgents.includes(agent.key) && selectedAgents.length >= 2}
+                      className="accent-indigo-600 h-5 w-5"
+                    />
+                    <span className="font-medium text-base text-gray-900 dark:text-gray-100">{agent.label}</span>
+                  </label>
 
-          {/* Symptoms Modal */}
-          {selectedAgent && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-              <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-md w-full p-6 relative animate-fadeIn">
-                <button
-                  className="absolute top-2 right-2 flex items-center justify-center w-8 h-8 rounded-full bg-white/70 dark:bg-gray-800/70 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-indigo-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600 text-2xl font-bold transition-all"
-                  onClick={() => setSelectedAgent(null)}
-                >
-                  ×
-                </button>
-                <h3 className="text-lg font-semibold text-indigo-700 dark:text-indigo-300 mb-4 text-center">{selectedAgent.label}</h3>
-                <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-                  {selectedAgent.symptoms.map((symptom) => (
-                    <div key={symptom} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                      <div className="flex flex-col gap-4">
-                        <button
-                          onClick={() => handleSymptomSelect(symptom)}
-                          className={`text-left font-medium ${
-                            selectedSymptom === symptom
-                              ? 'text-indigo-600 dark:text-indigo-300'
-                              : 'text-gray-900 dark:text-gray-100'
-                          }`}
-                        >
-                          {symptom}
-                        </button>
-                        {selectedSymptom === symptom && (
-                          <>
-                            <div className="flex gap-4">
-                              <label className="flex items-center gap-1 cursor-pointer">
-                                <input
-                                  type="radio"
-                                  name={`${selectedAgent.key}-${symptom}`}
-                                  checked={answers[selectedAgent.key]?.[symptom]?.answer === 'yes'}
-                                  onChange={() => handleAnswer(symptom, 'yes')}
-                                  className="accent-indigo-600 h-4 w-4"
-                                />
-                                <span className="text-indigo-600 dark:text-indigo-300 font-semibold">YES</span>
-                              </label>
-                              <label className="flex items-center gap-1 cursor-pointer">
-                                <input
-                                  type="radio"
-                                  name={`${selectedAgent.key}-${symptom}`}
-                                  checked={answers[selectedAgent.key]?.[symptom]?.answer === 'no'}
-                                  onChange={() => handleAnswer(symptom, 'no')}
-                                  className="accent-gray-400 h-4 w-4"
-                                />
-                                <span className="text-gray-600 dark:text-gray-300 font-semibold">NO</span>
-                              </label>
+                  {/* Show symptoms if agent is selected */}
+                  {selectedAgents.includes(agent.key) && (
+                    <div className="ml-8 space-y-4 border-l-2 border-indigo-200 dark:border-indigo-700 pl-4">
+                      {agent.symptoms.map((symptom) => {
+                        const currentState = answers[agent.key]?.[symptom];
+                        return (
+                          <div key={symptom} className="bg-indigo-50 dark:bg-gray-800 rounded-lg p-4 border border-indigo-100 dark:border-gray-700">
+                            <p className="text-gray-900 dark:text-gray-100 font-medium mb-3">{symptom}</p>
+                            <div className="flex items-center gap-4">
+                              <span className="text-gray-700 dark:text-gray-300 text-sm">Present?</span>
+                              <div className="flex items-center">
+                                <button
+                                  type="button"
+                                  className={`px-3 py-1 rounded-l-md border transition ${
+                                    currentState?.answer === 'yes'
+                                      ? 'bg-green-500 text-white border-green-600'
+                                      : 'bg-gray-200 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
+                                  } hover:opacity-90`}
+                                  onClick={() => handleAnswer(agent.key, symptom, 'yes')}
+                                >
+                                  YES
+                                </button>
+                                <button
+                                  type="button"
+                                  className={`px-3 py-1 rounded-r-md border transition ${
+                                    currentState?.answer === 'no'
+                                      ? 'bg-red-500 text-white border-red-600'
+                                      : 'bg-gray-200 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'
+                                  } hover:opacity-90`}
+                                  onClick={() => handleAnswer(agent.key, symptom, 'no')}
+                                >
+                                  NO
+                                </button>
+                              </div>
                             </div>
-                            {answers[selectedAgent.key]?.[symptom]?.answer === 'yes' && (
-                              <div className="flex gap-4">
-                                {[0, 1, 2].map((idx) => (
-                                  <label key={idx} className="flex flex-col items-center cursor-pointer">
-                                    <input
-                                      type="checkbox"
-                                      checked={!!answers[selectedAgent.key]?.[symptom]?.ratings?.[idx]}
-                                      onChange={() => handleRating(symptom, idx)}
-                                      className="accent-yellow-400 h-6 w-6"
-                                    />
-                                    <span className="text-xs text-gray-700 dark:text-gray-200 mt-1">Level {idx + 1}</span>
-                                  </label>
-                                ))}
+
+                            {currentState?.answer === 'yes' && (
+                              <div className="mt-4">
+                                <span className="text-gray-700 dark:text-gray-300 text-sm">Grade Level:</span>
+                                <div className="flex items-center gap-4 mt-2">
+                                  <input
+                                    type="range"
+                                    min="1"
+                                    max="3"
+                                    step="1"
+                                    value={currentState.ratings.findIndex(r => r) + 1 || 1}
+                                    onChange={(e) => {
+                                      const value = parseInt(e.target.value);
+                                      const newRatings = [false, false, false];
+                                      newRatings[value - 1] = true;
+                                      handleRating(agent.key, symptom, value - 1);
+                                    }}
+                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-indigo-600"
+                                  />
+                                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[1.5rem] text-center">
+                                    {currentState.ratings.findIndex(r => r) + 1 || 1}
+                                  </span>
+                                </div>
                               </div>
                             )}
-                            {errors[`${selectedAgent.key}-${symptom}`] && (
-                              <p className="text-red-500 text-sm">{errors[`${selectedAgent.key}-${symptom}`]}</p>
-                            )}
-                          </>
-                        )}
-                      </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
+                  )}
                 </div>
-              </div>
+              ))}
             </div>
-          )}
+            {errors.selectedAgents && <p className="mt-2 text-xs text-red-500">{errors.selectedAgents}</p>}
+          </div>
 
-          {/* Summary of selected agents */}
-          <div className="mt-8 mb-4">
-            <span className="block font-semibold text-gray-700 dark:text-gray-200 mb-2">Selected Agents:</span>
-            <ul className="list-disc list-inside text-gray-800 dark:text-gray-100">
-              {selectedAgents.length === 0 && <li>None selected</li>}
-              {selectedAgents.map((key) => {
-                const agent = agentOptions.find((a) => a.key === key);
-                return agent ? <li key={key}>{agent.label}</li> : null;
-              })}
-            </ul>
+          {/* II. DURATION OF CONTACT section */}
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">II. DURATION OF CONTACT</h2>
+            <input
+              type="text"
+              value={durationOfContact}
+              onChange={(e) => setDurationOfContact(e.target.value)}
+              placeholder="Enter duration of contact"
+              className="block w-full rounded-lg bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600 sm:text-base transition-all"
+            />
+            {errors.durationOfContact && <p className="mt-2 text-xs text-red-500">{errors.durationOfContact}</p>}
+          </div>
+
+          {/* III. SITE OF CONTACT section */}
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">III. SITE OF CONTACT</h2>
+            <input
+              type="text"
+              value={siteOfContact}
+              onChange={(e) => setSiteOfContact(e.target.value)}
+              placeholder="Enter site of contact"
+              className="block w-full rounded-lg bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600 sm:text-base transition-all"
+            />
+            {errors.siteOfContact && <p className="mt-2 text-xs text-red-500">{errors.siteOfContact}</p>}
           </div>
 
           <div className="flex justify-end mt-8">

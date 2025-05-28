@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-type OrganismOption = {
+// Export the OrganismOption interface
+export interface OrganismOption {
   key: string;
   label: string;
   subOptions?: string[];
-};
+}
 
 const organismOptions: OrganismOption[] = [
   {
@@ -190,30 +191,102 @@ const sarpaSubtypeSymptoms: Record<string, string[]> = {
 };
 
 export function DamashaBite() {
-  const [selectedOrganism, setSelectedOrganism] = useState("");
-  const [selectedSarpa, setSelectedSarpa] = useState("");
+  const [selectedOrganism, setSelectedOrganism] = useState<string | null>(null);
+  const [selectedSarpaSubtype, setSelectedSarpaSubtype] = useState<string | null>(null);
+  const [subOptionState, setSubOptionState] = useState<Record<string, Record<string, { choice: "yes" | "no" | null, grade: number | null }>>>({});
   const [timeOfBite, setTimeOfBite] = useState("");
   const [siteOfBite, setSiteOfBite] = useState("");
-  const [modalOption, setModalOption] = useState<OrganismOption | null>(null);
-  const [sarpaModal, setSarpaModal] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  const [errors, setErrors] = useState<{ [key: string]: string }>({}); // State for validation errors
+
   const handleOptionClick = (opt: OrganismOption) => {
-    setSelectedOrganism(opt.key);
-    if (opt.subOptions && opt.key !== "sarpa") {
-      setModalOption(opt);
-    } else {
-      setModalOption(null);
-      setSelectedSarpa("");
+    setSelectedOrganism(selectedOrganism === opt.key ? null : opt.key);
+    setSubOptionState({});
+    if (opt.key !== 'sarpa') {
+      setSelectedSarpaSubtype(null);
     }
   };
 
-  const handleSubOptionSelect = (sub: string) => {
-    setSelectedSarpa(sub);
-    setModalOption(null);
+  const handleSarpaSubtypeClick = (subOpt: string) => {
+    setSelectedSarpaSubtype(selectedSarpaSubtype === subOpt ? null : subOpt);
   };
 
-  const closeModal = () => setModalOption(null);
+  const handleSubOptionChange = (organismKey: string, subOption: string, choice: "yes" | "no") => {
+    setSubOptionState(prevState => ({
+      ...prevState,
+      [organismKey]: {
+        ...prevState[organismKey],
+        [subOption]: {
+          choice: choice,
+          grade: choice === "yes" ? (prevState[organismKey]?.[subOption]?.grade ?? 1) : null,
+        }
+      }
+    }));
+  };
+
+  const handleGradeChange = (organismKey: string, subOption: string, grade: number) => {
+    setSubOptionState(prevState => ({
+      ...prevState,
+      [organismKey]: {
+        ...prevState[organismKey],
+        [subOption]: {
+          ...prevState[organismKey]?.[subOption],
+          grade: grade,
+        }
+      }
+    }));
+  };
+
+  // Validation function
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!selectedOrganism) {
+      newErrors.selectedOrganism = 'Please select an organism.';
+    }
+    if (!timeOfBite.trim()) {
+      newErrors.timeOfBite = 'Time of Bite is required.';
+    }
+    if (!siteOfBite.trim()) {
+      newErrors.siteOfBite = 'Site of Bite is required.';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Validate the form before saving and navigating
+    if (validateForm()) {
+      // Gather all data
+      const damashaData = {
+        selectedOrganism,
+        selectedSarpaSubtype,
+        subOptionState,
+        timeOfBite,
+        siteOfBite,
+      };
+
+      // Retrieve data from previous pages from localStorage
+      const personalData = JSON.parse(localStorage.getItem('personalDetails') || '{}');
+      const additionalData = JSON.parse(localStorage.getItem('additionalDetails') || '{}');
+
+      // Combine all data
+      const allFormData = {
+        personal: personalData,
+        additional: additionalData,
+        damasha: damashaData,
+      };
+
+      // Save combined data to localStorage
+      localStorage.setItem('allFormData', JSON.stringify(allFormData));
+
+      // Navigate to Conclusion page
+      navigate('/damsha-conclusion');
+    }
+  };
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-indigo-50 to-white dark:from-black dark:via-gray-900 dark:to-gray-800 flex items-center justify-center px-2 py-8 sm:py-16 transition-colors duration-500">
@@ -238,48 +311,145 @@ export function DamashaBite() {
                 <div key={opt.key}>
                   <button
                     type="button"
-                    className={`w-full text-left px-4 py-3 rounded-lg border transition font-medium text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600 ${
-                      selectedOrganism === opt.key
+                    className={`w-full text-left px-4 py-3 rounded-lg border transition font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600
+                      ${selectedOrganism === opt.key
                         ? "bg-indigo-600 text-white dark:bg-indigo-700"
-                        : "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:bg-indigo-100 dark:hover:bg-gray-700"
-                    }`}
+                        : "bg-indigo-50 dark:bg-gray-800 text-gray-900 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-indigo-100 dark:hover:bg-gray-700"}
+                    `}
                     onClick={() => handleOptionClick(opt)}
                   >
                     {opt.label}
                   </button>
-                  {/* SARPA [SNAKE] suboptions inline */}
-                  {opt.key === "sarpa" &&
-                    selectedOrganism === "sarpa" &&
-                    opt.subOptions && (
-                      <div className="mt-4 ml-4 space-y-2">
-                        {opt.subOptions.map((sub) => (
-                          <label
-                            key={sub}
-                            className="flex items-center gap-2 cursor-pointer"
-                          >
-                            <input
-                              type="radio"
-                              name="sarpaType"
-                              value={sub}
-                              checked={selectedSarpa === sub}
-                              onChange={() => {
-                                setSelectedSarpa(sub);
-                                if (sarpaSubtypeSymptoms[sub])
-                                  setSarpaModal(sub);
-                              }}
-                              className="accent-indigo-600 h-4 w-4"
-                            />
-                            <span className="text-gray-800 dark:text-gray-200">
-                              {sub}
-                            </span>
-                          </label>
+
+                  {/* Render SARPA sub-options */}
+                  {opt.key === 'sarpa' && selectedOrganism === 'sarpa' && opt.subOptions && (
+                    <div className="mt-4 ml-4 border-l-2 border-indigo-300 dark:border-indigo-600 pl-4 space-y-3">
+                        <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">Sub-options:</h3>
+                        {/* Render SARPA sub-options as buttons with symptoms nested */}
+                        {opt.subOptions.map((subOpt) => (
+                            <div key={subOpt}>
+                                <button
+                                    type="button"
+                                    className={`w-full text-left px-4 py-2 rounded-lg border transition font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600
+                                        ${selectedSarpaSubtype === subOpt
+                                            ? "bg-indigo-500 text-white dark:bg-indigo-600"
+                                            : "bg-indigo-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-600 hover:bg-indigo-200 dark:hover:bg-gray-600"}
+                                    `}
+                                    onClick={() => handleSarpaSubtypeClick(subOpt)}
+                                >
+                                    {subOpt}
+                                </button>
+                                {/* Render symptoms only if this SARPA sub-option is selected */}
+                                {selectedSarpaSubtype === subOpt && sarpaSubtypeSymptoms[subOpt]?.length > 0 && (
+                                    <div className="mt-4 space-y-4 ml-4">
+                                        <h4 className="text-md font-semibold text-gray-800 dark:text-gray-200 dark:text-gray-100">Symptoms:</h4>
+                                        {sarpaSubtypeSymptoms[subOpt].map((symptom, sympIdx) => {
+                                            const symptomState = subOptionState[opt.key]?.[symptom];
+                                            return (
+                                                <div key={sympIdx} className="flex flex-col space-y-2">
+                                                    <p className="text-gray-700 dark:text-gray-300 text-sm">{symptom}</p>
+                                                    <div className="flex items-center gap-4 mt-2">
+                                                        <span className="text-gray-700 dark:text-gray-300 text-sm">Present?</span>
+                                                        <div className="flex items-center">
+                                                            <button
+                                                                type="button"
+                                                                className={`px-3 py-1 rounded-l-md border transition ${symptomState?.choice === 'yes' ? 'bg-green-500 text-white border-green-600' : 'bg-gray-200 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'} hover:opacity-90`}
+                                                                onClick={(e) => {e.stopPropagation(); handleSubOptionChange(opt.key, symptom, 'yes');}}
+                                                            >
+                                                                YES
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className={`px-3 py-1 rounded-r-md border transition ${symptomState?.choice === 'no' ? 'bg-red-500 text-white border-red-600' : 'bg-gray-200 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'} hover:opacity-90`}
+                                                                onClick={(e) => {e.stopPropagation(); handleSubOptionChange(opt.key, symptom, 'no');}}
+                                                            >
+                                                                NO
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    {symptomState?.choice === 'yes' && (
+                                                        <div className="flex items-center gap-4 mt-3">
+                                                            <span className="text-gray-700 dark:text-gray-300 text-sm">Grade Level:</span>
+                                                            <div className="flex items-center gap-4 w-48">
+                                                                <input
+                                                                    type="range"
+                                                                    min="1"
+                                                                    max="3"
+                                                                    step="1"
+                                                                    value={symptomState?.grade ?? 1}
+                                                                    onChange={(e) => handleGradeChange(opt.key, symptom, parseInt(e.target.value))}
+                                                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-indigo-600"
+                                                                />
+                                                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[1.5rem] text-center">
+                                                                    {symptomState?.grade ?? 1}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
                         ))}
-                      </div>
-                    )}
-                  {/* No suboptions message for options without subOptions */}
-                  {selectedOrganism === opt.key && !opt.subOptions && (
-                    <div className="mt-2 text-indigo-700 dark:text-indigo-300 text-sm">
-                      No sub-options.
+                    </div>
+                  )}
+
+                  {/* Original rendering for non-SARPA organisms */}
+                  {opt.key !== 'sarpa' && selectedOrganism === opt.key && opt.subOptions && (
+                    <div className="mt-4 ml-4 border-l-2 border-indigo-300 dark:border-indigo-600 pl-4 space-y-3">
+                      <h3 className="text-md font-semibold text-gray-800 dark:text-gray-200 mb-2">Sub-options:</h3>
+                      {opt.subOptions.map((subOpt) => {
+                        const currentState = subOptionState[opt.key]?.[subOpt];
+
+                        return (
+                          <div key={subOpt} className="flex flex-col space-y-2">
+                            <p className="text-gray-700 dark:text-gray-300 text-sm font-medium">{subOpt}</p>
+
+                            <div className="flex items-center gap-4 mt-2">
+                              <span className="text-gray-700 dark:text-gray-300 text-sm">Present?</span>
+                              <div className="flex items-center">
+                                <button
+                                  type="button"
+                                  className={`px-3 py-1 rounded-l-md border transition ${currentState?.choice === 'yes' ? 'bg-green-500 text-white border-green-600' : 'bg-gray-200 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'} hover:opacity-90`}
+                                  onClick={(e) => {e.stopPropagation(); handleSubOptionChange(opt.key, subOpt, 'yes');}}
+                                >
+                                  YES
+                                </button>
+                                <button
+                                  type="button"
+                                  className={`px-3 py-1 rounded-r-md border transition ${currentState?.choice === 'no' ? 'bg-red-500 text-white border-red-600' : 'bg-gray-200 text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600'} hover:opacity-90`}
+                                  onClick={(e) => {e.stopPropagation(); handleSubOptionChange(opt.key, subOpt, 'no');}}
+                                >
+                                  NO
+                                </button>
+                              </div>
+                            </div>
+
+                            {currentState?.choice === 'yes' && (
+                              <div className="flex items-center gap-4 mt-3">
+                                <span className="text-gray-700 dark:text-gray-300 text-sm">Grade Level:</span>
+                                <div className="flex items-center gap-4 w-48">
+                                  <input
+                                    type="range"
+                                    min="1"
+                                    max="3"
+                                    step="1"
+                                    value={currentState?.grade ?? 1}
+                                    onChange={(e) => handleGradeChange(opt.key, subOpt, parseInt(e.target.value))}
+                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-indigo-600"
+                                  />
+                                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[1.5rem] text-center">
+                                    {currentState?.grade ?? 1}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -297,6 +467,7 @@ export function DamashaBite() {
               placeholder="Enter time of bite"
               className="block w-full rounded-md bg-white dark:bg-gray-900 px-3 py-1.5 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm"
             />
+            {errors.timeOfBite && <p className="mt-1 text-xs text-red-500">{errors.timeOfBite}</p>}
           </div>
           <div className="bg-indigo-50 dark:bg-gray-800 rounded-lg p-6 border border-indigo-100 dark:border-gray-700 transition-colors duration-500">
             <label className="block text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">
@@ -309,71 +480,22 @@ export function DamashaBite() {
               placeholder="Enter site of bite"
               className="block w-full rounded-md bg-white dark:bg-gray-900 px-3 py-1.5 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm"
             />
+            {errors.siteOfBite && <p className="mt-1 text-xs text-red-500">{errors.siteOfBite}</p>}
           </div>
+        </div>
+        <div className="mt-8 flex justify-end">
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg shadow border border-indigo-600 hover:bg-indigo-600 transition font-semibold text-base"
+          >
+            <span className="text-xl">→</span> Submit and Continue
+          </button>
         </div>
       </div>
-      {/* Modal for subOptions */}
-      {modalOption && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-md w-full p-10 relative animate-fadeIn">
-            <button
-              className="absolute top-3 right-3 flex items-center justify-center w-10 h-10 sm:w-8 sm:h-8 rounded-full bg-white/70 dark:bg-gray-800/70 text-gray-500 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600 transition-all"
-              style={{ lineHeight: 1 }}
-              onClick={closeModal}
-              aria-label="Close"
-            >
-              <span className="text-2xl sm:text-xl font-bold leading-none">
-                ×
-              </span>
-            </button>
-            <h3 className="text-lg font-semibold text-indigo-700 dark:text-indigo-300 mb-4 text-center">
-              {modalOption.label} Symptoms
-            </h3>
-            <div className="space-y-3 max-h-72 overflow-y-auto pr-2">
-              {modalOption.subOptions?.map((sub) => (
-                <button
-                  key={sub}
-                  className={`w-full text-left px-4 py-2 rounded-lg border transition font-medium text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 dark:focus:ring-indigo-600 ${
-                    selectedSarpa === sub
-                      ? "bg-indigo-600 text-white dark:bg-indigo-700"
-                      : "bg-indigo-50 dark:bg-gray-800 text-gray-900 dark:text-gray-200 border-gray-200 dark:border-gray-700 hover:bg-indigo-100 dark:hover:bg-gray-700"
-                  }`}
-                  onClick={() => handleSubOptionSelect(sub)}
-                >
-                  {sub}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Modal for SARPA subtype symptoms */}
-      {sarpaModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-md w-full p-6 relative animate-fadeIn">
-            <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white text-2xl font-bold"
-              onClick={() => setSarpaModal(null)}
-              aria-label="Close"
-            >
-              ×
-            </button>
-            <h3 className="text-lg font-semibold text-indigo-700 dark:text-indigo-300 mb-4 text-center">
-              {sarpaModal} Symptoms
-            </h3>
-            <div className="space-y-3 max-h-72 overflow-y-auto pr-2">
-              {sarpaSubtypeSymptoms[sarpaModal]?.map((symptom) => (
-                <div
-                  key={symptom}
-                  className="px-4 py-2 rounded-lg bg-indigo-50 dark:bg-gray-800 text-gray-900 dark:text-gray-200 border border-gray-200 dark:border-gray-700"
-                >
-                  {symptom}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
+
+// Export organismOptions
+export { organismOptions };
