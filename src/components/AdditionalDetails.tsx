@@ -77,7 +77,7 @@ export function AdditionalDetails() {
           <div className="relative bg-white/70 dark:bg-gray-800/70 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-500">
             <label className="block text-base font-medium text-gray-900 dark:text-gray-200 mb-2">ASSOCIATED COMPLAINTS</label>
             <textarea
-              name="Associated Complaints"
+              name="associatedComplaints"
               value={formData.associatedComplaints}
               onChange={handleChange}
               maxLength={600}
@@ -91,7 +91,7 @@ export function AdditionalDetails() {
           <div className="relative bg-white/70 dark:bg-gray-800/70 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-500">
             <label className="block text-base font-medium text-gray-900 dark:text-gray-200 mb-2">ALLERGIES ASSOCIATED</label>
             <textarea
-              name="Allergies Associated"
+              name="allergiesAssociated"
               value={formData.allergiesAssociated}
               onChange={handleChange}
               maxLength={600}
@@ -105,7 +105,7 @@ export function AdditionalDetails() {
           <div className="relative bg-white/70 dark:bg-gray-800/70 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-500">
             <label className="block text-base font-medium text-gray-900 dark:text-gray-200 mb-2">ANY BITE PREVIOUSLY (last 10 yrs)</label>
             <textarea
-              name="AnyBite Previously"
+              name="anyBitePreviously"
               value={formData.anyBitePreviously}
               onChange={handleChange}
               maxLength={600}
@@ -119,7 +119,7 @@ export function AdditionalDetails() {
           <div className="relative bg-white/70 dark:bg-gray-800/70 rounded-xl shadow p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-500">
             <label className="block text-base font-medium text-gray-900 dark:text-gray-200 mb-2">NIDANA <span className="text-gray-400">(optional)</span></label>
             <textarea
-              name="Nidana"
+              name="nidana"
               value={formData.nidana}
               onChange={handleChange}
               maxLength={1200}
