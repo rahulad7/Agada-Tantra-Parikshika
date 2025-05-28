@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import type { OrganismOption } from './DamashaBite';
 
 interface FormData {
   personal: any;
@@ -45,7 +44,7 @@ export function DamshaConclusion() {
     let totalGrade = 0;
     let maxPossibleGrade = 0;
 
-    Object.entries(formData.damasha.subOptionState).forEach(([organism, subOptions]) => {
+    Object.entries(formData.damasha.subOptionState).forEach(([_, subOptions]) => {
       Object.entries(subOptions).forEach(([_, state]) => {
         if (state.choice === 'yes') {
           totalGrade += state.grade || 0;

@@ -44,8 +44,8 @@ export function ExtrnalAgentConclusion() {
     let totalGrade = 0;
     let maxPossibleGrade = 0;
 
-    Object.entries(formData.externalAgents.answers).forEach(([agentKey, symptoms]) => {
-      Object.entries(symptoms).forEach(([symptom, data]) => {
+    Object.entries(formData.externalAgents.answers).forEach(([_, symptoms]) => {
+      Object.entries(symptoms).forEach(([_, data]) => {
         if (data.answer === 'yes') {
           // Find the selected grade level (index + 1)
           const grade = data.ratings.findIndex(r => r) + 1;
